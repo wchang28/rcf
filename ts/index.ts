@@ -11,7 +11,7 @@ import * as mc from './MessageClient';
 require("es6-promise").polyfill();
 
 export {$Driver} from 'rest-driver';
-export {Access as OAuth2Access, ITokenGrantor as IOAuth2TokenGrantor} from 'oauth2';
+export {Access as OAuth2Access, ITokenGrantor as IOAuth2TokenGrantor, ITokenRefresher as IOAuth2TokenRefresher} from 'oauth2';
 export {ConnectOptions as ApiInstanceConnectOptions, RESTReturn, HTTPHeaders, HTTPMethod, ContentInfo} from 'rest-api-interfaces';
 export {IMessage, IMsgHeaders, EventType as MessageEventType, MessageCallback, IMessageClient, ISubscription, SubscriptionJSON} from './MessageClient';
 
