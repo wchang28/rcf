@@ -6,7 +6,7 @@ import * as oauth2 from 'oauth2';
 import * as authorized$ from './authorized$';
 import * as mc from './MessageClient';
 export { $Driver } from 'rest-driver';
-export { Access as OAuth2Access, ITokenGrantor as IOAuth2TokenGrantor, ITokenRefresher as IOAuth2TokenRefresher } from 'oauth2';
+export { Access as OAuth2Access, ITokenRefresher as IOAuth2TokenRefresher } from 'oauth2';
 export { ConnectOptions as ApiInstanceConnectOptions, RESTReturn, HTTPHeaders, HTTPMethod, ContentInfo } from 'rest-api-interfaces';
 export { IMessage, IMsgHeaders, EventType as MessageEventType, MessageCallback, IMessageClient, ISubscription, SubscriptionJSON } from './MessageClient';
 export interface IMessageClientOptions {
