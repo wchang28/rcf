@@ -1,0 +1,28 @@
+{
+  "name": "rcf",
+  "version": "0.0.1",
+  "description": "REST Communication Fundation",
+  "main": "./js/index.js",
+  "typings": "./js/index.d.ts",
+  "scripts": {},
+  "keywords": [
+    "REST",
+    "API"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wchang28/rcf.git"
+  },
+  "author": "Wen Chang",
+  "license": "MIT",
+  "dependencies": {
+    "@types/lodash": "^4.14.64",
+    "@types/node": "^6.0.73",
+    "es6-promise": "^4.1.0",
+    "eventsource-typings": "git+https://github.com/wchang28/eventsource-typings.git",
+    "lodash": "^4.17.4",
+    "oauth2": "git+https://github.com/wchang28/oauth2.git",
+    "rest-api-interfaces": "git+https://github.com/wchang28/rest-api-interfaces.git",
+    "rest-driver": "git+https://github.com/wchang28/rest-driver.git"
+  }
+}
