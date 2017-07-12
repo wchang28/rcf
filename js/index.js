@@ -96,7 +96,12 @@ var AuthorizedApiRoute = (function () {
         configurable: true
     });
     Object.defineProperty(AuthorizedApiRoute.prototype, "BaseUrl", {
-        get: function () { return this.parentBaseUrl + this.mountPath; },
+        get: function () {
+            var s = this.parentBaseUrl + this.mountPath;
+            if (s.length >= 1 && s.substr(s.length - 1, 1) === "/")
+                s = s.substr(0, s.length - 1); // remove the last "/"
+            return s;
+        },
         enumerable: true,
         configurable: true
     });

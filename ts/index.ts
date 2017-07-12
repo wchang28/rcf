@@ -95,7 +95,11 @@ class $UCaller implements I$Caller {
 class AuthorizedApiRoute implements IAuthorizedApiRoute {
     constructor(private rootApi: AuthorizedRestApi, private parentBaseUrl: string,  private mountPath: string) {}
     get RootApi() : AuthorizedRestApi {return this.rootApi;}
-    get BaseUrl() : string {return this.parentBaseUrl + this.mountPath;}
+    get BaseUrl() : string {
+        let s = this.parentBaseUrl + this.mountPath;
+        if (s.length >= 1 && s.substr(s.length-1, 1) === "/") s = s.substr(0, s.length-1); // remove the last "/"
+        return s;
+    }
     $J(method: restIntf.HTTPMethod, pathname: string, data: any, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         return this.rootApi.$J(method, this.BaseUrl + pathname, data, headers);
     }

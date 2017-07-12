@@ -1,6 +1,6 @@
 {
   "name": "rcf",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "REST Communication Fundation",
   "main": "./js/index.js",
   "typings": "./js/index.d.ts",
