@@ -1,16 +1,5 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var events = require("events");
 var _ = require("lodash");
 var oauth2 = require("oauth2");
 var mc = require("./MessageClient");
@@ -127,16 +116,10 @@ var AuthorizedApiRoute = (function () {
     return AuthorizedApiRoute;
 }());
 // base class for all REST api
-// support the following events:
-// 1. on_access_refreshed(newAccess)
-var AuthorizedRestApi = (function (_super) {
-    __extends(AuthorizedRestApi, _super);
-    function AuthorizedRestApi($driver, access, tokenRefresher) {
-        var _this = _super.call(this) || this;
-        _this.$driver = $driver;
-        _this.access = access;
-        _this.tokenRefresher = tokenRefresher;
-        return _this;
+var AuthorizedRestApi = (function () {
+    function AuthorizedRestApi($driver, access, notUsed) {
+        this.$driver = $driver;
+        this.access = access;
     }
     // convert connect options to access (without tokens)
     AuthorizedRestApi.connectOptionsToAccess = function (connectOptions) {
@@ -147,13 +130,6 @@ var AuthorizedRestApi = (function (_super) {
             access.rejectUnauthorized = connectOptions.rejectUnauthorized;
         return (JSON.stringify(access) === '{}' ? null : access);
     };
-    Object.defineProperty(AuthorizedRestApi.prototype, "refresh_token", {
-        get: function () {
-            return (this.access && this.access.refresh_token ? this.access.refresh_token : null);
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(AuthorizedRestApi.prototype, "instance_url", {
         get: function () {
             return (this.access && this.access.instance_url ? this.access.instance_url : '');
@@ -202,62 +178,35 @@ var AuthorizedRestApi = (function (_super) {
     AuthorizedRestApi.prototype.mount = function (mountPath) {
         return new AuthorizedApiRoute(this, this.BaseUrl, mountPath);
     };
-    AuthorizedRestApi.prototype.executeWorkflow = function ($caller, pathname, additionalHeaders) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            $caller.call(_this.getUrl(pathname), _this.getCallOptions(additionalHeaders))
-                .then(function (value) {
-                resolve(value);
-            }).catch(function (err) {
-                if (_this.tokenRefresher && _this.refresh_token) {
-                    _this.tokenRefresher.refreshAccessToken(_this.refresh_token)
-                        .then(function (newAccess) {
-                        _this.access = newAccess;
-                        _this.emit('on_access_refreshed', newAccess);
-                        $caller.call(_this.getUrl(pathname), _this.getCallOptions(additionalHeaders))
-                            .then(function (value) {
-                            resolve(value);
-                        }).catch(function (err) {
-                            reject(err);
-                        });
-                    }).catch(function (err) {
-                        reject(err);
-                    });
-                }
-                else
-                    reject(err);
-            });
-        });
-    };
     // api's $J method
     AuthorizedRestApi.prototype.$J = function (method, pathname, data, headers) {
         var caller = new $JCaller(this.$driver.$J, method, data);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $F method
     AuthorizedRestApi.prototype.$F = function (method, pathname, formData, headers) {
         var caller = new $FCaller(this.$driver.$F, method, formData);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $H method
     AuthorizedRestApi.prototype.$H = function (pathname, qs, headers) {
         var caller = new $HCaller(this.$driver.$H, qs);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $B method
     AuthorizedRestApi.prototype.$B = function (pathname, qs, headers) {
         var caller = new $BCaller(this.$driver.$B, qs);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $U method
     AuthorizedRestApi.prototype.$U = function (method, pathname, contentInfo, blob, headers) {
         var caller = new $UCaller(this.$driver.$U, method, contentInfo, blob);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $E method
     AuthorizedRestApi.prototype.$E = function (pathname, headers) {
         var caller = new $ECaller(this.$driver.$E);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $M method
     AuthorizedRestApi.prototype.$M = function (pathname, options, headers) {
@@ -283,5 +232,5 @@ var AuthorizedRestApi = (function (_super) {
     // function to create FormData object
     AuthorizedRestApi.prototype.createFormData = function () { return this.$driver.createFormData(); };
     return AuthorizedRestApi;
-}(events.EventEmitter));
+}());
 exports.AuthorizedRestApi = AuthorizedRestApi;

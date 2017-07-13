@@ -18,8 +18,6 @@ var EventType;
     EventType[EventType["MESSAGE"] = 2] = "MESSAGE";
 })(EventType = exports.EventType || (exports.EventType = {}));
 // Subscription class
-// this class supports the following events
-// 1. unsubscribed (sub_id: string)
 var Subscription = (function (_super) {
     __extends(Subscription, _super);
     function Subscription(authorized$J, conn_id, destination, headers, sub_id, cb) {
@@ -56,10 +54,7 @@ var Subscription = (function (_super) {
     };
     return Subscription;
 }(events.EventEmitter));
-// this class supports the following events
-// 1. ping
-// 2. connect (conn_id: string)
-// 3. error (err: any)
+// MessageClient class
 var MessageClient = (function (_super) {
     __extends(MessageClient, _super);
     function MessageClient(authorized$J) {

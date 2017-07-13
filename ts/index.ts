@@ -1,7 +1,5 @@
 import * as restIntf from 'rest-api-interfaces';
-import * as eventSource from 'eventsource-typings';
 import * as $dr from 'rest-driver';
-import * as events from 'events';
 import * as _ from 'lodash';
 import * as oauth2 from 'oauth2';
 import * as authorized$ from './authorized$';
@@ -11,7 +9,7 @@ import * as mc from './MessageClient';
 require("es6-promise").polyfill();
 
 export {$Driver} from 'rest-driver';
-export {Access as OAuth2Access, ITokenRefresher as IOAuth2TokenRefresher} from 'oauth2';
+export {Access as OAuth2Access} from 'oauth2';
 export {ConnectOptions as ApiInstanceConnectOptions, RESTReturn, HTTPHeaders, HTTPMethod, ContentInfo} from 'rest-api-interfaces';
 export {IMessage, IMsgHeaders, EventType as MessageEventType, MessageCallback, IMessageClient, ISubscription, SubscriptionJSON} from './MessageClient';
 
@@ -27,17 +25,20 @@ export interface IAuthorized$M {
 export interface IAuthorizedApiRoute {
     readonly RootApi: AuthorizedRestApi;
     readonly BaseUrl: string;
-    mount: (mountPath: string) => IAuthorizedApiRoute;
+    mount(mountPath: string): IAuthorizedApiRoute;
     $J: authorized$.I$J;
     $F: authorized$.I$F;
     $H: authorized$.I$H;
     $B: authorized$.I$B;
     $U: authorized$.I$U;
-    createFormData: () => $dr.IFormData;
+    createFormData(): $dr.IFormData;
 }
 
 export interface IAuthorizedApi extends IAuthorizedApiRoute {
-    $E: authorized$.I$E;
+    readonly $driver: $dr.$Driver;
+    access?: oauth2.Access;
+    readonly instance_url: string;
+    readonly rejectUnauthorized: boolean;
     $M: IAuthorized$M;
 }
 
@@ -47,7 +48,7 @@ let defaultMsgClientOptions : IMessageClientOptions = {
 
 // abstract interface for making all $ calls, since all $ calls have url and callOptions in the parameters list
 interface I$Caller {
-    call: (url: string, callOptions: restIntf.ApiCallOptions) => Promise<any>;
+    call(url: string, callOptions: restIntf.ApiCallOptions): Promise<any>;
 }
 
 class $JCaller implements I$Caller {
@@ -122,21 +123,14 @@ class AuthorizedApiRoute implements IAuthorizedApiRoute {
 }
 
 // base class for all REST api
-// support the following events:
-// 1. on_access_refreshed(newAccess)
-export class AuthorizedRestApi extends events.EventEmitter implements IAuthorizedApi {
-    constructor(public $driver:$dr.$Driver, public access?: oauth2.Access, public tokenRefresher?: oauth2.ITokenRefresher) {
-        super();
-    }
+export class AuthorizedRestApi implements IAuthorizedApi {
+    constructor(public $driver:$dr.$Driver, public access?: oauth2.Access, notUsed?: any) {}
     // convert connect options to access (without tokens)
     static connectOptionsToAccess(connectOptions: restIntf.ConnectOptions) : oauth2.Access {
         let access: oauth2.Access = {};
         if (connectOptions && connectOptions.instance_url) access.instance_url = connectOptions.instance_url;
         if (connectOptions && typeof connectOptions.rejectUnauthorized === 'boolean') access.rejectUnauthorized = connectOptions.rejectUnauthorized;
         return (JSON.stringify(access) === '{}' ? null : access);
-    }
-    public get refresh_token() : string {
-        return (this.access && this.access.refresh_token ? this.access.refresh_token : null); 
     }
     public get instance_url(): string {
         return (this.access && this.access.instance_url ? this.access.instance_url : '');
@@ -168,67 +162,41 @@ export class AuthorizedRestApi extends events.EventEmitter implements IAuthorize
     mount(mountPath: string) : IAuthorizedApiRoute {
         return new AuthorizedApiRoute(this, this.BaseUrl, mountPath);
     }
-
-    private executeWorkflow($caller: I$Caller, pathname: string, additionalHeaders?: $dr.HTTPHeaders) : Promise<any> {
-        return new Promise<any>((resolve: (value: any)=> void, reject: (err: any) => void) => {
-            $caller.call(this.getUrl(pathname), this.getCallOptions(additionalHeaders))
-            .then((value: any) => {
-                resolve(value);
-            }).catch((err: any) => {
-                if (this.tokenRefresher && this.refresh_token) {
-                    this.tokenRefresher.refreshAccessToken(this.refresh_token)
-                    .then((newAccess: oauth2.Access) => {
-                        this.access = newAccess;
-                        this.emit('on_access_refreshed', newAccess);
-                        $caller.call(this.getUrl(pathname), this.getCallOptions(additionalHeaders))
-                        .then((value: any) => {
-                            resolve(value);
-                        }).catch((err: any) => {
-                            reject(err);
-                        });
-                    }).catch((err: any) => {
-                        reject(err);
-                    });
-                } else 
-                    reject(err);
-            });
-        });
-    }
     
     // api's $J method
     $J(method: restIntf.HTTPMethod, pathname: string, data: any, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         let caller = new $JCaller(this.$driver.$J, method, data);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
     
     // api's $F method
     $F(method: restIntf.HTTPMethod, pathname: string, formData: $dr.IFormData, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         let caller = new $FCaller(this.$driver.$F, method, formData);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
 
     // api's $H method
     $H(pathname: string, qs?: any, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         let caller = new $HCaller(this.$driver.$H, qs);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
 
     // api's $B method
     $B(pathname: string, qs?: any,  headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         let caller = new $BCaller(this.$driver.$B, qs);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
 
     // api's $U method
     $U(method: restIntf.HTTPMethod, pathname: string, contentInfo: restIntf.ContentInfo, blob: $dr.IReadableBlob, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         let caller = new $UCaller(this.$driver.$U, method, contentInfo, blob);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
 
     // api's $E method
     $E(pathname: string, headers?: $dr.HTTPHeaders) : Promise<$dr.I$EReturn> {
         let caller = new $ECaller(this.$driver.$E);
-        return this.executeWorkflow(caller, pathname, headers);
+        return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
 
     // api's $M method

@@ -34,18 +34,18 @@ export interface SubscriptionJSON {
     sub_id: string;
 }
 
+// Subscription interface
 export interface ISubscription {
     readonly destination: string;
     readonly headers: {[field:string]: any};
     readonly sub_id: string;
     readonly cb: MessageCallback;
-    unsubscribe: () => Promise<restIntf.RESTReturn>;
-    toJSON: () => SubscriptionJSON;
+    unsubscribe() : Promise<restIntf.RESTReturn>;
+    toJSON() : SubscriptionJSON;
+    on(event: "unsubscribed", listener: (sub_id: string) => void) : this;
 }
 
 // Subscription class
-// this class supports the following events
-// 1. unsubscribed (sub_id: string)
 class Subscription extends events.EventEmitter implements ISubscription {
     constructor(private authorized$J: authorized$.I$J, private conn_id: string, public destination: string, public headers:{[field:string]: any}, public sub_id: string, public cb: MessageCallback) {
         super();
@@ -74,27 +74,22 @@ class Subscription extends events.EventEmitter implements ISubscription {
 }
 
 // MessageClient interface
-// this interface supports the following events
-// 1. ping
-// 2. connect (conn_id: string)
-// 3. error (err: any)
 export interface IMessageClient {
     readonly connected: boolean;
     readonly connId: string;
     readonly subscriptions: {[sub_id: string]: ISubscription;};
-    validSubscription: (sub_id: string) => boolean;
-    subscribe: (destination: string, cb: MessageCallback, headers?:{[field:string]: any}) => Promise<string>;
-    unsubscribe: (sub_id: string) => Promise<restIntf.RESTReturn>;
-    unsubscribeAll: () => Promise<restIntf.RESTReturn[]>;
-    send: (destination:string, headers: {[field:string]:any}, message:any) => Promise<restIntf.RESTReturn>;
-    disconnect: () => void;
-    on: (event:string, listener: Function) => this;
+    validSubscription(sub_id: string) : boolean;
+    subscribe(destination: string, cb: MessageCallback, headers?:{[field:string]: any}) : Promise<string>;
+    unsubscribe(sub_id: string) : Promise<restIntf.RESTReturn>;
+    unsubscribeAll() : Promise<restIntf.RESTReturn[]>;
+    send(destination:string, headers: {[field:string]:any}, message:any) : Promise<restIntf.RESTReturn>;
+    disconnect() : void;
+    on(event: "ping", listener: () => void) : this;
+    on(event: "connect", listener: (conn_id: string) => void) : this;
+    on(event: "error", listener: (err: any) => void) : this;
 }
 
-// this class supports the following events
-// 1. ping
-// 2. connect (conn_id: string)
-// 3. error (err: any)
+// MessageClient class
 export class MessageClient extends events.EventEmitter implements IMessageClient {
     private source: eventSource.IEventSource = null;
     private conn_id: string = null;
@@ -171,7 +166,7 @@ export class MessageClient extends events.EventEmitter implements IMessageClient
         return this.ajaxSubscribe(this.conn_id, this_sub_id, destination, headers)
         .then((restReturn: restIntf.RESTReturn) => {
             // subscription is successful, create a new Subscription object
-            let subscription = new Subscription(this.authorized$J, this.conn_id, destination, headers, this_sub_id, cb);
+            let subscription: ISubscription = new Subscription(this.authorized$J, this.conn_id, destination, headers, this_sub_id, cb);
             subscription.on('unsubscribed', (sub_id: string) => {
                 delete this.subscriptions[sub_id];
             });

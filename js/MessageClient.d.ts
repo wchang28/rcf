@@ -37,8 +37,9 @@ export interface ISubscription {
     };
     readonly sub_id: string;
     readonly cb: MessageCallback;
-    unsubscribe: () => Promise<restIntf.RESTReturn>;
-    toJSON: () => SubscriptionJSON;
+    unsubscribe(): Promise<restIntf.RESTReturn>;
+    toJSON(): SubscriptionJSON;
+    on(event: "unsubscribed", listener: (sub_id: string) => void): this;
 }
 export interface IMessageClient {
     readonly connected: boolean;
@@ -46,17 +47,19 @@ export interface IMessageClient {
     readonly subscriptions: {
         [sub_id: string]: ISubscription;
     };
-    validSubscription: (sub_id: string) => boolean;
-    subscribe: (destination: string, cb: MessageCallback, headers?: {
+    validSubscription(sub_id: string): boolean;
+    subscribe(destination: string, cb: MessageCallback, headers?: {
         [field: string]: any;
-    }) => Promise<string>;
-    unsubscribe: (sub_id: string) => Promise<restIntf.RESTReturn>;
-    unsubscribeAll: () => Promise<restIntf.RESTReturn[]>;
-    send: (destination: string, headers: {
+    }): Promise<string>;
+    unsubscribe(sub_id: string): Promise<restIntf.RESTReturn>;
+    unsubscribeAll(): Promise<restIntf.RESTReturn[]>;
+    send(destination: string, headers: {
         [field: string]: any;
-    }, message: any) => Promise<restIntf.RESTReturn>;
-    disconnect: () => void;
-    on: (event: string, listener: Function) => this;
+    }, message: any): Promise<restIntf.RESTReturn>;
+    disconnect(): void;
+    on(event: "ping", listener: () => void): this;
+    on(event: "connect", listener: (conn_id: string) => void): this;
+    on(event: "error", listener: (err: any) => void): this;
 }
 export declare class MessageClient extends events.EventEmitter implements IMessageClient {
     private authorized$J;
