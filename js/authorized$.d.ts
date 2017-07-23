@@ -16,5 +16,5 @@ export interface I$B {
     (pathname: string, qs?: any, headers?: restIntf.HTTPHeaders): Promise<restIntf.RESTReturn>;
 }
 export interface I$U {
-    (method: restIntf.HTTPMethod, pathname: string, contentInfo: restIntf.ContentInfo, blob: $dr.IReadableBlob, headers?: restIntf.HTTPHeaders): Promise<restIntf.RESTReturn>;
+    (method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: restIntf.HTTPHeaders): Promise<restIntf.RESTReturn>;
 }

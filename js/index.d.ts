@@ -54,7 +54,7 @@ export declare class AuthorizedRestApi implements IAuthorizedApi {
     $F(method: restIntf.HTTPMethod, pathname: string, formData: $dr.IFormData, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
     $H(pathname: string, qs?: any, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
     $B(pathname: string, qs?: any, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
-    $U(method: restIntf.HTTPMethod, pathname: string, contentInfo: restIntf.ContentInfo, blob: $dr.IReadableBlob, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
+    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
     $E(pathname: string, headers?: $dr.HTTPHeaders): Promise<$dr.I$EReturn>;
     $M(pathname: string, options?: IMessageClientOptions, headers?: $dr.HTTPHeaders): mc.IMessageClient;
     createFormData(): $dr.IFormData;

@@ -62,14 +62,13 @@ var $BCaller = (function () {
     return $BCaller;
 }());
 var $UCaller = (function () {
-    function $UCaller($U, method, contentInfo, blob) {
+    function $UCaller($U, method, readableContent) {
         this.$U = $U;
         this.method = method;
-        this.contentInfo = contentInfo;
-        this.blob = blob;
+        this.readableContent = readableContent;
     }
     $UCaller.prototype.call = function (url, callOptions) {
-        return this.$U(this.method, url, this.contentInfo, this.blob, callOptions);
+        return this.$U(this.method, url, this.readableContent, callOptions);
     };
     return $UCaller;
 }());
@@ -106,8 +105,8 @@ var AuthorizedApiRoute = (function () {
     AuthorizedApiRoute.prototype.$B = function (pathname, qs, headers) {
         return this.rootApi.$B(this.BaseUrl + pathname, qs, headers);
     };
-    AuthorizedApiRoute.prototype.$U = function (method, pathname, contentInfo, blob, headers) {
-        return this.rootApi.$U(method, this.BaseUrl + pathname, contentInfo, blob, headers);
+    AuthorizedApiRoute.prototype.$U = function (method, pathname, readableContent, headers) {
+        return this.rootApi.$U(method, this.BaseUrl + pathname, readableContent, headers);
     };
     AuthorizedApiRoute.prototype.mount = function (mountPath) {
         return new AuthorizedApiRoute(this.rootApi, this.BaseUrl, mountPath);
@@ -199,8 +198,8 @@ var AuthorizedRestApi = (function () {
         return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $U method
-    AuthorizedRestApi.prototype.$U = function (method, pathname, contentInfo, blob, headers) {
-        var caller = new $UCaller(this.$driver.$U, method, contentInfo, blob);
+    AuthorizedRestApi.prototype.$U = function (method, pathname, readableContent, headers) {
+        var caller = new $UCaller(this.$driver.$U, method, readableContent);
         return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $E method

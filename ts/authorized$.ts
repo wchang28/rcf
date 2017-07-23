@@ -28,5 +28,5 @@ export interface I$B {
 
 // already authorized and instance-independent interface that makes a blob upload call - returns promise
 export interface I$U {
-    (method: restIntf.HTTPMethod, pathname: string, contentInfo: restIntf.ContentInfo, blob: $dr.IReadableBlob, headers?: restIntf.HTTPHeaders) : Promise<restIntf.RESTReturn>;
+    (method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: restIntf.HTTPHeaders) : Promise<restIntf.RESTReturn>;
 }

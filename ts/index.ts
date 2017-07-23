@@ -87,9 +87,9 @@ class $BCaller implements I$Caller {
 }
 
 class $UCaller implements I$Caller {
-    constructor(protected $U: $dr.I$U, protected method: restIntf.HTTPMethod, protected contentInfo: restIntf.ContentInfo, protected blob: $dr.IReadableBlob) {}
+    constructor(protected $U: $dr.I$U, protected method: restIntf.HTTPMethod, protected readableContent: restIntf.ReadableContent<$dr.IReadableBlob>) {}
     call(url: string, callOptions: restIntf.ApiCallOptions) : Promise<restIntf.RESTReturn> {
-        return this.$U(this.method, url, this.contentInfo, this.blob, callOptions);
+        return this.$U(this.method, url, this.readableContent, callOptions);
     }
 }
 
@@ -113,8 +113,8 @@ class AuthorizedApiRoute implements IAuthorizedApiRoute {
     $B(pathname: string, qs?: any, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         return this.rootApi.$B(this.BaseUrl + pathname, qs, headers);
     }
-    $U(method: restIntf.HTTPMethod, pathname: string, contentInfo: restIntf.ContentInfo, blob: $dr.IReadableBlob, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
-        return this.rootApi.$U(method, this.BaseUrl + pathname, contentInfo, blob, headers);
+    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
+        return this.rootApi.$U(method, this.BaseUrl + pathname, readableContent, headers);
     }
     mount(mountPath: string) : IAuthorizedApiRoute {
         return new AuthorizedApiRoute(this.rootApi, this.BaseUrl, mountPath);
@@ -188,8 +188,8 @@ export class AuthorizedRestApi implements IAuthorizedApi {
     }
 
     // api's $U method
-    $U(method: restIntf.HTTPMethod, pathname: string, contentInfo: restIntf.ContentInfo, blob: $dr.IReadableBlob, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
-        let caller = new $UCaller(this.$driver.$U, method, contentInfo, blob);
+    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
+        let caller = new $UCaller(this.$driver.$U, method, readableContent);
         return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
 
