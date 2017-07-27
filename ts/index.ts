@@ -10,7 +10,8 @@ require("es6-promise").polyfill();
 
 export {$Driver} from 'rest-driver';
 export {Access as OAuth2Access} from 'oauth2';
-export {ConnectOptions as ApiInstanceConnectOptions, RESTReturn, HTTPHeaders, HTTPMethod, ContentInfo} from 'rest-api-interfaces';
+export {Access} from 'oauth2';
+export {ConnectOptions as ApiInstanceConnectOptions, RESTReturn, HTTPHeaders, HTTPResourceCrudMethod, HTTPMethod, ContentInfo, ReadableContent} from 'rest-api-interfaces';
 export {IMessage, IMsgHeaders, EventType as MessageEventType, MessageCallback, IMessageClient, ISubscription, SubscriptionJSON} from './MessageClient';
 
 export interface IMessageClientOptions {
