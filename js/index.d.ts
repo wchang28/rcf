@@ -3,7 +3,7 @@ import * as $dr from 'rest-driver';
 import * as oauth2 from 'oauth2';
 import * as authorized$ from './authorized$';
 import * as mc from './MessageClient';
-export { $Driver } from 'rest-driver';
+export { $Driver, Progress, ProgressCallback } from 'rest-driver';
 export { Access as OAuth2Access } from 'oauth2';
 export { Access } from 'oauth2';
 export { ConnectOptions as ApiInstanceConnectOptions, RESTReturn, HTTPHeaders, HTTPResourceCrudMethod, HTTPMethod, ContentInfo, ReadableContent } from 'rest-api-interfaces';
@@ -55,7 +55,7 @@ export declare class AuthorizedRestApi implements IAuthorizedApi {
     $F(method: restIntf.HTTPMethod, pathname: string, formData: $dr.IFormData, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
     $H(pathname: string, qs?: any, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
     $B(pathname: string, qs?: any, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
-    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
+    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, progressCB: $dr.ProgressCallback, headers?: $dr.HTTPHeaders): Promise<restIntf.RESTReturn>;
     $E(pathname: string, headers?: $dr.HTTPHeaders): Promise<$dr.I$EReturn>;
     $M(pathname: string, options?: IMessageClientOptions, headers?: $dr.HTTPHeaders): mc.IMessageClient;
     createFormData(): $dr.IFormData;

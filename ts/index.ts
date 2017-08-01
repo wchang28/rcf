@@ -8,7 +8,7 @@ import * as mc from './MessageClient';
 // make sure the environment has the Promise object in the global space
 require("es6-promise").polyfill();
 
-export {$Driver} from 'rest-driver';
+export {$Driver, Progress, ProgressCallback} from 'rest-driver';
 export {Access as OAuth2Access} from 'oauth2';
 export {Access} from 'oauth2';
 export {ConnectOptions as ApiInstanceConnectOptions, RESTReturn, HTTPHeaders, HTTPResourceCrudMethod, HTTPMethod, ContentInfo, ReadableContent} from 'rest-api-interfaces';
@@ -88,9 +88,9 @@ class $BCaller implements I$Caller {
 }
 
 class $UCaller implements I$Caller {
-    constructor(protected $U: $dr.I$U, protected method: restIntf.HTTPMethod, protected readableContent: restIntf.ReadableContent<$dr.IReadableBlob>) {}
+    constructor(protected $U: $dr.I$U, protected method: restIntf.HTTPMethod, protected readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, protected progressCB: $dr.ProgressCallback) {}
     call(url: string, callOptions: restIntf.ApiCallOptions) : Promise<restIntf.RESTReturn> {
-        return this.$U(this.method, url, this.readableContent, callOptions);
+        return this.$U(this.method, url, this.readableContent, this.progressCB, callOptions);
     }
 }
 
@@ -114,8 +114,8 @@ class AuthorizedApiRoute implements IAuthorizedApiRoute {
     $B(pathname: string, qs?: any, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
         return this.rootApi.$B(this.BaseUrl + pathname, qs, headers);
     }
-    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
-        return this.rootApi.$U(method, this.BaseUrl + pathname, readableContent, headers);
+    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, progressCB:$dr.ProgressCallback, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
+        return this.rootApi.$U(method, this.BaseUrl + pathname, readableContent, progressCB, headers);
     }
     mount(mountPath: string) : IAuthorizedApiRoute {
         return new AuthorizedApiRoute(this.rootApi, this.BaseUrl, mountPath);
@@ -189,8 +189,8 @@ export class AuthorizedRestApi implements IAuthorizedApi {
     }
 
     // api's $U method
-    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
-        let caller = new $UCaller(this.$driver.$U, method, readableContent);
+    $U(method: restIntf.HTTPMethod, pathname: string, readableContent: restIntf.ReadableContent<$dr.IReadableBlob>, progressCB: $dr.ProgressCallback, headers?: $dr.HTTPHeaders) : Promise<restIntf.RESTReturn> {
+        let caller = new $UCaller(this.$driver.$U, method, readableContent, progressCB);
         return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     }
 

@@ -62,13 +62,14 @@ var $BCaller = (function () {
     return $BCaller;
 }());
 var $UCaller = (function () {
-    function $UCaller($U, method, readableContent) {
+    function $UCaller($U, method, readableContent, progressCB) {
         this.$U = $U;
         this.method = method;
         this.readableContent = readableContent;
+        this.progressCB = progressCB;
     }
     $UCaller.prototype.call = function (url, callOptions) {
-        return this.$U(this.method, url, this.readableContent, callOptions);
+        return this.$U(this.method, url, this.readableContent, this.progressCB, callOptions);
     };
     return $UCaller;
 }());
@@ -105,8 +106,8 @@ var AuthorizedApiRoute = (function () {
     AuthorizedApiRoute.prototype.$B = function (pathname, qs, headers) {
         return this.rootApi.$B(this.BaseUrl + pathname, qs, headers);
     };
-    AuthorizedApiRoute.prototype.$U = function (method, pathname, readableContent, headers) {
-        return this.rootApi.$U(method, this.BaseUrl + pathname, readableContent, headers);
+    AuthorizedApiRoute.prototype.$U = function (method, pathname, readableContent, progressCB, headers) {
+        return this.rootApi.$U(method, this.BaseUrl + pathname, readableContent, progressCB, headers);
     };
     AuthorizedApiRoute.prototype.mount = function (mountPath) {
         return new AuthorizedApiRoute(this.rootApi, this.BaseUrl, mountPath);
@@ -198,8 +199,8 @@ var AuthorizedRestApi = (function () {
         return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $U method
-    AuthorizedRestApi.prototype.$U = function (method, pathname, readableContent, headers) {
-        var caller = new $UCaller(this.$driver.$U, method, readableContent);
+    AuthorizedRestApi.prototype.$U = function (method, pathname, readableContent, progressCB, headers) {
+        var caller = new $UCaller(this.$driver.$U, method, readableContent, progressCB);
         return caller.call(this.getUrl(pathname), this.getCallOptions(headers));
     };
     // api's $E method
